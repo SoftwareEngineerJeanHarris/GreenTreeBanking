@@ -73,6 +73,69 @@ JWT_SECRET=your_super_secret_key
 
 ```sql
 CREATE DATABASE green_tree_banking;
+
+-- 1. Users
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
+    date_of_birth DATE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- 2. Roles
+CREATE TABLE roles (
+    role_id INT AUTO_INCREMENT PRIMARY KEY,
+    role_name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- 3. User Roles
+CREATE TABLE user_roles (
+    user_id INT NOT NULL,
+    role_id INT NOT NULL,
+    PRIMARY KEY (user_id, role_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (role_id) REFERENCES roles(role_id)
+);
+
+-- 4. Bank Accounts
+CREATE TABLE bank_accounts (
+    account_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    account_type ENUM('CHECKING', 'SAVINGS', 'INVESTMENT') NOT NULL,
+    account_name VARCHAR(100),
+    balance DECIMAL(15, 2) DEFAULT 0.00,
+    interest_rate DECIMAL(5, 2),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+-- 5. Transactions
+CREATE TABLE transactions (
+    transaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    from_account_id INT,
+    to_account_id INT,
+    amount DECIMAL(15, 2) NOT NULL,
+    transaction_type ENUM('TRANSFER', 'DEPOSIT', 'WITHDRAWAL') NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    description TEXT,
+    FOREIGN KEY (from_account_id) REFERENCES bank_accounts(account_id),
+    FOREIGN KEY (to_account_id) REFERENCES bank_accounts(account_id)
+);
+
+-- 6. Activity Logs
+CREATE TABLE activity_logs (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    event_type VARCHAR(100) NOT NULL,
+    ip_address VARCHAR(45),
+    details TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
 ```
 
 5. **Run the server**
@@ -131,6 +194,3 @@ MIT © 2025 Green Tree Banking
 
 Pull requests are welcome!  
 Please fork this repo, commit changes to a branch, and open a PR with a clear description.
-```
-
----
