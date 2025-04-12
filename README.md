@@ -29,7 +29,7 @@ Built with:
 
 ### 📁 Project Structure
 
-```
+```bash
 backend/
 ├── src/
 │   ├── routes/            # API route definitions
