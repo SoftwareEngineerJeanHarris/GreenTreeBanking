@@ -1,8 +1,3 @@
-Absolutely! Here's the **clean, fully rendered version** of your `README.md` file for the Green Tree Banking backend API project—formatted perfectly for GitHub:
-
----
-
-```markdown
 # 🌿 Green Tree Banking – Backend API
 
 A RESTful API for the **Green Tree Banking** platform. This backend handles user authentication, account management, and secure transaction processing for a fictional banking application.
@@ -29,7 +24,7 @@ Built with:
 
 ### 📁 Project Structure
 
-```bash
+```
 backend/
 ├── src/
 │   ├── routes/            # API route definitions
