@@ -1,32 +1,31 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const db = require('../models/db');
+const db = require('../models/db'); // Your DB helper
 
 exports.register = async (req, res) => {
     const { email, password, full_name } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const sql = 'INSERT INTO users (email, password_hash, full_name) VALUES (?, ?, ?)';
-    db.query(sql, [email, hashedPassword, full_name], (err, result) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.status(201).json({ message: 'User registered' });
-    });
-};
+    // Basic validation
+    if (!email || !password || !full_name) {
+        return res.status(400).json({ message: 'All fields are required.' });
+    }
 
-exports.login = async (req, res) => {
-    const { email, password } = req.body;
-    const sql = 'SELECT * FROM users WHERE email = ?';
-
-    db.query(sql, [email], async (err, results) => {
-        if (err || results.length === 0) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+    try {
+        // Check if user already exists
+        const [existing] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
+        if (existing.length > 0) {
+            return res.status(409).json({ message: 'User already exists.' });
         }
 
-        const user = results[0];
-        const isMatch = await bcrypt.compare(password, user.password_hash);
-        if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+        // Hash password
+        const hashed = await bcrypt.hash(password, 10);
 
-        const token = jwt.sign({ user_id: user.user_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token });
-    });
+        // Insert user
+        const sql = 'INSERT INTO users (email, password_hash, full_name) VALUES (?, ?, ?)';
+        await db.promise().query(sql, [email, hashed, full_name]);
+
+        res.status(201).json({ message: 'User registered successfully.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error. Could not register user.' });
+    }
 };
